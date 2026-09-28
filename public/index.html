@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PkVGC — Pokémon VGC Learning App</title>
+  <meta name="description" content="Learn Pokémon VGC base stats, abilities, type matchups and natures with retro-style flashcard quizzes. Regulation M-C legal Pokémon." />
+  <meta name="keywords" content="Pokemon VGC quiz, VGC learning app, base stats flashcards, ability quiz, type matchup quiz, Regulation M-C" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="crt-overlay"></div>
+
+  <!-- LOADING SCREEN -->
+  <div id="screen-loading" class="screen active">
+    <div class="loading-box">
+      <div class="pixel-logo">PKVGC</div>
+      <div class="pixel-sub">VGC LEARNING</div>
+      <div class="loading-bar-wrap">
+        <div class="loading-bar" id="loading-bar"></div>
+      </div>
+      <div class="loading-text" id="loading-text">LOADING DATA...</div>
+    </div>
+  </div>
+
+  <!-- MAIN MENU -->
+  <div id="screen-menu" class="screen">
+    <header class="game-header">
+      <div class="header-logo">PKVGC</div>
+      <div class="header-sub">VGC LEARNING APP</div>
+      <div class="reg-badge">REG M-C</div>
+    </header>
+
+    <div class="score-bar">
+      <span class="score-label">SCORE</span>
+      <span class="score-value" id="menu-score">0</span>
+      <span class="score-label" style="margin-left:1.5rem">STREAK</span>
+      <span class="score-value" id="menu-streak">0</span>
+    </div>
+
+    <nav class="menu-grid">
+      <button class="menu-card" id="btn-stats" data-mode="stats">
+        <div class="menu-icon">📊</div>
+        <div class="menu-title">BASE STATS</div>
+        <div class="menu-desc">Learn HP, ATK, DEF,<br>SpA, SpD, SPE</div>
+      </button>
+      <button class="menu-card" id="btn-abilities" data-mode="abilities">
+        <div class="menu-icon">✨</div>
+        <div class="menu-title">ABILITIES</div>
+        <div class="menu-desc">Identify abilities<br>and their effects</div>
+      </button>
+      <button class="menu-card" id="btn-types" data-mode="types">
+        <div class="menu-icon">⚡</div>
+        <div class="menu-title">TYPE CHART</div>
+        <div class="menu-desc">Attacker &amp; defender<br>type matchups</div>
+      </button>
+      <button class="menu-card" id="btn-natures" data-mode="natures">
+        <div class="menu-icon">🌿</div>
+        <div class="menu-title">NATURES</div>
+        <div class="menu-desc">25 natures, boosts<br>and reductions</div>
+      </button>
+    </nav>
+
+    <div class="menu-footer">
+      <span class="footer-text">235 POKÉMON · REG M-C · POKÉMON VGC LEARNING</span>
+    </div>
+  </div>
+
+  <!-- MODE SELECT / DIFFICULTY -->
+  <div id="screen-mode" class="screen">
+    <div class="mode-container">
+      <button class="back-btn" id="back-to-menu">◀ MENU</button>
+      <div class="mode-title" id="mode-title">SELECT DIFFICULTY</div>
+
+      <div class="diff-grid">
+        <button class="diff-btn" data-diff="easy">
+          <span class="diff-label">EASY</span>
+          <span class="diff-desc" id="desc-easy"></span>
+        </button>
+        <button class="diff-btn" data-diff="medium">
+          <span class="diff-label">MEDIUM</span>
+          <span class="diff-desc" id="desc-medium"></span>
+        </button>
+        <button class="diff-btn" data-diff="hard">
+          <span class="diff-label">HARD</span>
+          <span class="diff-desc" id="desc-hard"></span>
+        </button>
+        <button class="diff-btn" data-diff="expert">
+          <span class="diff-label">EXPERT</span>
+          <span class="diff-desc" id="desc-expert"></span>
+        </button>
+      </div>
+
+      <!-- Sub-mode for abilities -->
+      <div id="ability-modes" class="submode-grid hidden">
+        <button class="submode-btn" data-sub="identify">IDENTIFY ABILITY</button>
+        <button class="submode-btn" data-sub="effect">EFFECT → NAME</button>
+        <button class="submode-btn" data-sub="reverse">WHICH POKEMON?</button>
+      </div>
+
+      <!-- Sub-mode for types -->
+      <div id="type-modes" class="submode-grid hidden">
+        <button class="submode-btn" data-sub="defender">DEFENDING TYPE</button>
+        <button class="submode-btn" data-sub="attacker">ATTACKING TYPE</button>
+      </div>
+
+      <div class="modifiers-panel" id="modifiers-panel">
+        <div class="mod-title">OPTIONS</div>
+        <label class="mod-toggle">
+          <input type="checkbox" id="toggle-ingame" />
+          <span class="toggle-label">IN-GAME VALUE</span>
+          <span class="toggle-hint">(base +20 all stats, +75 for HP)</span>
+        </label>
+        <!-- Sub-options: only relevant when in-game calculation is on -->
+        <div id="ingame-subopts" class="mod-subopts hidden">
+          <label class="mod-toggle mod-sub">
+            <input type="checkbox" id="toggle-sp" />
+            <span class="toggle-label">+SP MODIFIER</span>
+            <span class="toggle-hint">(stat points 0–32)</span>
+          </label>
+          <label class="mod-toggle mod-sub">
+            <input type="checkbox" id="toggle-nature" />
+            <span class="toggle-label">+NATURE MODIFIER</span>
+            <span class="toggle-hint">(×1.1 boost / ×0.9 reduce)</span>
+          </label>
+        </div>
+      </div>
+
+      <button class="start-btn" id="start-quiz">▶ START QUIZ</button>
+    </div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-topbar">
+      <button class="back-btn small" id="quit-quiz">✕ QUIT</button>
+      <div class="quiz-progress">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="quiz-progress-bar"></div>
+        </div>
+      </div>
+      <div class="quiz-score-box">
+        <span class="qs-label">SCORE</span>
+        <span class="qs-value" id="quiz-score-display">0</span>
+      </div>
+    </div>
+
+    <!-- Retry round banner (shown only during retry) -->
+    <div id="retry-banner" class="retry-banner hidden">
+      <span class="retry-label">⟳ RETRY ROUND</span>
+      <span class="retry-count" id="retry-count">0 LEFT</span>
+    </div>
+
+    <div class="quiz-card" id="quiz-card">
+      <div class="question-meta" id="question-meta"></div>
+      <div class="pokemon-frame" id="pokemon-frame">
+        <img id="pokemon-sprite" src="" alt="" />
+      </div>
+      <div class="question-text" id="question-text"></div>
+      <div class="type-badges" id="type-badges"></div>
+
+      <!-- Multiple choice answers -->
+      <div class="answers-grid" id="answers-grid"></div>
+
+      <!-- Free text input -->
+      <div class="text-input-wrap hidden" id="text-input-wrap">
+        <input type="text" id="text-answer" class="text-answer" placeholder="TYPE YOUR ANSWER..." autocomplete="off" />
+        <button class="submit-btn" id="submit-text">CONFIRM</button>
+      </div>
+
+      <!-- Result reveal -->
+      <div class="result-box hidden" id="result-box">
+        <div class="result-icon" id="result-icon"></div>
+        <div class="result-text" id="result-text"></div>
+        <div class="result-detail" id="result-detail"></div>
+        <button class="next-btn" id="next-question">NEXT ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="screen-results" class="screen">
+    <div class="results-container">
+      <div class="results-title">QUIZ OVER!</div>
+      <div class="results-score-wrap">
+        <div class="results-score-label">FINAL SCORE</div>
+        <div class="results-score" id="final-score">0</div>
+        <div class="results-score-label">/ <span id="final-total">0</span></div>
+      </div>
+      <div class="results-stats">
+        <div class="rstat"><span class="rstat-label">CORRECT</span><span class="rstat-val" id="res-correct">0</span></div>
+        <div class="rstat"><span class="rstat-label">WRONG</span><span class="rstat-val" id="res-wrong">0</span></div>
+        <div class="rstat"><span class="rstat-label">ACCURACY</span><span class="rstat-val" id="res-accuracy">0%</span></div>
+        <div class="rstat"><span class="rstat-label">BEST STREAK</span><span class="rstat-val" id="res-streak">0</span></div>
+      </div>
+      <div class="results-grade" id="results-grade"></div>
+      <div class="results-btns">
+        <button class="start-btn" id="play-again">▶ PLAY AGAIN</button>
+        <button class="back-btn-large" id="results-to-menu">MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="modules/progress.js"></script>
+  <script src="modules/quiz-engine.js"></script>
+  <script src="modules/stats-quiz.js"></script>
+  <script src="modules/abilities-quiz.js"></script>
+  <script src="modules/types-quiz.js"></script>
+  <script src="modules/natures-quiz.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
